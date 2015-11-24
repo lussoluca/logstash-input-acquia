@@ -37,7 +37,7 @@ class LogStash::Inputs::Acquia < LogStash::Inputs::Base
       @streams.each do |env, stream|
         stream.each_log do |log|
           # p log
-          queue << generate_event(env, log)
+          queue << decorate(generate_event(env, log))
         end
       end
     end
@@ -52,16 +52,19 @@ class LogStash::Inputs::Acquia < LogStash::Inputs::Base
 
   private
   def generate_event(env, log)
-    # Remove useless cruft.
+    # Remove useless API cruft.
     log.delete 'cmd'
+
     # Save the environment this message is coming from.
     log['acquia'] = {
         'site' => @site.name,
         'environment' => env,
     }
+
     # Rename some of Acquia's parameters to more relevant Logstash names.
     log['host'] = log.delete('server')
     log['message'] = log.delete('text')
+
     # Trim off duplicated request id if Acquia has already provided it
     # separately.
     if log['request_id']
@@ -71,7 +74,15 @@ class LogStash::Inputs::Acquia < LogStash::Inputs::Base
       end
     end
 
-    log['@timestamp'] = Time.parse(log.delete('disp_time') + ' +0000').iso8601
+    timestamp = log.delete('disp_time')
+    if timestamp
+      begin
+        log['@timestamp'] = Time.parse(timestamp + ' +0000').iso8601
+      rescue ArgumentError
+        # Not a valid timestamp. Oh well. Clean up, just in case.
+        log.delete '@timestamp'
+      end
+    end
 
     LogStash::Event.new(log)
   end

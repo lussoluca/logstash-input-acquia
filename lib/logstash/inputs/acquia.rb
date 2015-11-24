@@ -87,3 +87,7 @@ class LogStash::Inputs::Acquia < LogStash::Inputs::Base
     LogStash::Event.new(log)
   end
 end
+
+# Required afterwards so that the inheritance tree has already been built
+# correctly.
+require 'logstash/inputs/acquia/version'

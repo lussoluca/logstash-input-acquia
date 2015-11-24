@@ -1,4 +1,5 @@
 # encoding: utf-8
+require 'time'
 require 'logstash/inputs/base'
 require 'logstash/namespace'
 require 'stud/interval'
@@ -9,20 +10,53 @@ class LogStash::Inputs::Acquia < LogStash::Inputs::Base
 
   default :codec, 'plain'
 
-  config :environments, :validate =>
+  config :username, :validate => :string, :required => true
+  config :api_key, :validate => :string, :required => true
+  config :site, :validate => :string, :required => true
+  config :environments, :validate => :array, :default => ['prod']
+  config :types, :validate => :array, :default => ['drupal-watchdog', 'php-error']
 
   public
   def register
-    
+    @cloud = ::Acquia::Cloud.new(:credentials => "#{@username}:#{@api_key}")
+    @site = @cloud.site(@site)
+    @streams = @environments.map do |env|
+      @logger.info "Opening log stream for #{env}."
+      stream = @site.environment(env).logstream
+      @types.each do |type|
+        stream.enable_type type
+      end
+      stream.connect
+      stream
+    end
   end
 
   def run(queue)
     Stud.interval(1) do
-
+      @streams.each do |env|
+        env.each_log do |log|
+          # p log
+          queue << generate_event(log)
+        end
+      end
     end
   end
 
   def stop
+    @logger.info 'Closing log streams.'
+    @streams.each do |stream|
+      stream.close
+    end
+  end
 
+  private
+  def generate_event(log)
+    # Remove useless cruft.
+    log.delete 'cmd'
+    # Rename some of Acquia's parameters to more relevant Logstash names
+    log['host'] = log.delete('server')
+    log['message'] = log.delete('text')
+    log['@timestamp'] = Time.parse(log.delete('disp_time') + ' +0000').iso8601
+    LogStash::Event.new(log)
   end
 end

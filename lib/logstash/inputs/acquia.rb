@@ -55,8 +55,10 @@ class LogStash::Inputs::Acquia < LogStash::Inputs::Base
     # Remove useless cruft.
     log.delete 'cmd'
     # Save the environment this message is coming from.
-    log['[acquia][site]'] = @site.name
-    log['[acquia][environment]'] = env
+    log['acquia'] = {
+        'site' => @site.name,
+        'environment' => env,
+    }
     # Rename some of Acquia's parameters to more relevant Logstash names.
     log['host'] = log.delete('server')
     log['message'] = log.delete('text')

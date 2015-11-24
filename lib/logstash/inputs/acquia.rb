@@ -62,6 +62,15 @@ class LogStash::Inputs::Acquia < LogStash::Inputs::Base
     # Rename some of Acquia's parameters to more relevant Logstash names.
     log['host'] = log.delete('server')
     log['message'] = log.delete('text')
+    # Trim off duplicated request id if Acquia has already provided it
+    # separately.
+    if log['request_id']
+      matches = log['message'].match %r{\s+request_id="#{log['request_id']}"\s+$}
+      if matches
+        log['message'] = log['message'][0, log['message'].length - matches[0].length]
+      end
+    end
+
     log['@timestamp'] = Time.parse(log.delete('disp_time') + ' +0000').iso8601
 
     LogStash::Event.new(log)

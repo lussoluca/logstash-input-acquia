@@ -1,10 +1,6 @@
-$:.push File.join(File.dirname(__FILE__), 'lib')
-
-require 'logstash/inputs/acquia/version'
-
 Gem::Specification.new do |s|
   s.name             = 'logstash-input-acquia'
-  s.version          = LogStash::Inputs::Acquia::VERSION
+  s.version          = File.read(File.join(File.dirname(__FILE__), 'VERSION')).strip
   s.licenses         = ['MIT']
   s.summary          = 'Logstash Input plugin that streams logs from Acquia Cloud'
   s.description      = 'This gem is a logstash plugin required to be installed on top of the Logstash core pipeline using $LS_HOME/bin/plugin install gemname. This gem is not a stand-alone program'

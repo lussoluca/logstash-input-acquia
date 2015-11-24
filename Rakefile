@@ -1,9 +1,9 @@
-$:.push File.join(File.dirname(__FILE__), 'lib')
-
-require 'logstash/inputs/acquia/version'
+def current_version
+  File.read('VERSION').strip
+end
 
 def current_gems
-  Dir["pkg/logstash-input-acquia-*.gem"]
+  Dir["pkg/logstash-input-acquia-#{current_version}.gem"]
 end
 
 namespace :gem do
@@ -22,8 +22,8 @@ namespace :gem do
       sh *%W{gem push #{gem}}
     end
     if File.exist? '.git'
-      sh *%W{git tag #{LogStash::Inputs::Acquia::VERSION}}
-      sh *%W{git push origin tag #{LogStash::Inputs::Acquia::VERSION}}
+      sh *%W{git tag #{current_version}}
+      sh *%W{git push origin tag #{current_version}}
     end
   end
 end

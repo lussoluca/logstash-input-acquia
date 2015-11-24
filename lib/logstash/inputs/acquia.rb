@@ -9,6 +9,7 @@ class LogStash::Inputs::Acquia < LogStash::Inputs::Base
   config_name 'acquia'
 
   default :codec, 'plain'
+  VERSION = File.read(File.join(File.dirname(__FILE__), '../../../VERSION')).strip
 
   config :username, :validate => :string, :required => true
   config :api_key, :validate => :string, :required => true
@@ -37,7 +38,9 @@ class LogStash::Inputs::Acquia < LogStash::Inputs::Base
       @streams.each do |env, stream|
         stream.each_log do |log|
           # p log
-          queue << decorate(generate_event(env, log))
+          event = generate_event(env, log)
+          decorate(event)
+          queue << event
         end
       end
     end
@@ -87,7 +90,3 @@ class LogStash::Inputs::Acquia < LogStash::Inputs::Base
     LogStash::Event.new(log)
   end
 end
-
-# Required afterwards so that the inheritance tree has already been built
-# correctly.
-require 'logstash/inputs/acquia/version'

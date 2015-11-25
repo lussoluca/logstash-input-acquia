@@ -16,7 +16,7 @@ class LogStash::Inputs::Acquia < LogStash::Inputs::Base
   config :site, :validate => :string, :required => true
   config :environments, :validate => :array, :default => ['prod']
   config :types, :validate => :array, :default => ['drupal-watchdog', 'php-error']
-  config :interval, :validate => :number, :default => 5
+  config :interval, :validate => :number, :default => 10
   config :debug, :validate => :boolean, :default => false
 
   public

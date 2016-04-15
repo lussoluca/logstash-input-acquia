@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.email            = 'sysadmin@equiem.com.au'
   s.homepage         = 'http://www.elastic.co/guide/en/logstash/current/index.html'
 
-  s.files         = `git ls-files -z`.split("\x0")
+  s.files         = Dir['Gemfile', 'Rakefile', 'lib/logstash/inputs/acquia.rb', 'logstash-input-acquia.gemspec', '.ruby-version']
   s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
   s.test_files    = s.files.grep(%r{^spec/})
   s.require_paths = ['lib']
